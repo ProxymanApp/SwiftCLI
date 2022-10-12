@@ -5,6 +5,7 @@ import PackageDescription
 
 let package = Package(
     name: "SwiftCLI",
+    platforms: [.macOS(.v10_15)],
     products: [
         .library(name: "SwiftCLI", targets: ["SwiftCLI"]),
     ],

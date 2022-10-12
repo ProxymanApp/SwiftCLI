@@ -80,14 +80,14 @@ public class Task {
     ///
     /// - Returns: the exit code of the completed task
     @discardableResult
-    public func runSync() -> Int32 {
-        launch()
+    public func runSync() throws -> Int32 {
+        try launch()
         return finish()
     }
     
     /// Run the task but do not wait for it to complete
-    public func runAsync() {
-        launch()
+    public func runAsync() throws {
+        try launch()
     }
 
     /// Wait for the task to finish; must have already called runAsync
@@ -160,7 +160,7 @@ public class Task {
     
     // Helpers
     
-    private func launch() {
+    private func launch() throws {
         if forwardInterrupt {
             InterruptPasser.add(self)
         }
@@ -174,7 +174,13 @@ public class Task {
         }
         
         process.environment = env
-        process.launch()
+
+        // this method is deprecated
+        // It can throw an C premitive exception - NSInvalidArgumentException, could not capture it
+        // process.launch()
+
+        // Use a recommended one
+        try process.run()
     }
     
 }
@@ -200,7 +206,7 @@ extension Task {
     /// - Throws: RunError if command fails
     public static func run(_ executable: String, arguments: [String], directory: String? = nil) throws {
         let task = Task(executable: executable, arguments: arguments, directory: directory)
-        let code = task.runSync()
+        let code = try task.runSync()
         guard code == 0 else {
             throw RunError(exitStatus: code)
         }
@@ -231,7 +237,7 @@ extension Task {
         let err = CaptureStream()
         
         let task = Task(executable: executable, arguments: arguments, directory: directory, stdout: out, stderr: err)
-        let exitCode = task.runSync()
+        let exitCode = try task.runSync()
         
         let captured = CaptureResult(stdoutData: out.readAllData(), stderrData: err.readAllData())
         guard exitCode == 0 else {

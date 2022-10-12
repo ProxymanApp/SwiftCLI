@@ -76,7 +76,7 @@ class TaskTests: XCTestCase {
         
         let output = CaptureStream()
         let task = Task(executable: "/usr/bin/sort", stdout: output, stdin: input)
-        task.runAsync()
+        try task.runAsync()
         
         input <<< "beta"
         input <<< "alpha"
@@ -104,8 +104,8 @@ class TaskTests: XCTestCase {
         let ls = Task(executable: "ls", arguments: [path], stdout: connector)
         let grep = Task(executable: "grep", arguments: ["Swift"], stdout: output, stdin: connector)
         
-        ls.runAsync()
-        grep.runAsync()
+        try ls.runAsync()
+        try grep.runAsync()
                 
         XCTAssertEqual(output.readAll(), "SwiftCLITests\n")
         
@@ -121,24 +121,24 @@ class TaskTests: XCTestCase {
         let capture = CaptureStream()
         
         let ls = Task(executable: "ls", directory: path, stdout: capture)
-        ls.runSync()
+        try ls.runSync()
         
         XCTAssertEqual(capture.readAll(), "SwiftCLI\n")
     }
     
-    func testEnv() {
+    func testEnv() throws {
         let capture = CaptureStream()
         
         let echo = Task(executable: "bash", arguments: ["-c", "echo $MY_VAR"], stdout: capture)
         echo.env["MY_VAR"] = "aVal"
-        echo.runSync()
+        try echo.runSync()
         
         XCTAssertEqual(capture.readAll(), "aVal\n")
     }
     
-    func testSignals() {
+    func testSignals() throws {
         let task = Task(executable: "/bin/sleep", arguments: ["1"])
-        task.runAsync()
+        try task.runAsync()
         
         XCTAssertTrue(task.suspend())
         sleep(2)
@@ -150,13 +150,13 @@ class TaskTests: XCTestCase {
         // Travis errors when calling interrupt on Linux for unknown reason
         #if os(macOS)
         let task2 = Task(executable: "/bin/sleep", arguments: ["3"])
-        task2.runAsync()
+        try task2.runAsync()
         task2.interrupt()
         XCTAssertEqual(task2.finish(), 2)
         #endif
         
         let task3 = Task(executable: "/bin/sleep", arguments: ["3"])
-        task3.runAsync()
+        try task3.runAsync()
         task3.terminate()
         XCTAssertEqual(task3.finish(), 15)
     }
@@ -174,14 +174,14 @@ class TaskTests: XCTestCase {
             count += 1
         }
         let task = Task(executable: "ls", arguments: [path], stdout: lineStream)
-        XCTAssertEqual(task.runSync(), 0)
+        XCTAssertEqual(try task.runSync(), 0)
         
         XCTAssertEqual(count, 3)
     }
     
     func testTaskNullStream() throws {
         let task = Task(executable: "ls", stdout: WriteStream.null)
-        task.runSync()
+        try task.runSync()
     }
     
     #endif
