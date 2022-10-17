@@ -14,7 +14,7 @@ Pod::Spec.new do |s|
   s.source       = { :git => "https://github.com/jakeheis/SwiftCLI.git", :tag => "#{s.version}" }
 
   s.platform     = :osx
-  s.osx.deployment_target = "10.9"
+  s.osx.deployment_target = "10.14"
 
   s.source_files  = "Sources", "Sources/**/*.{swift}"
 
